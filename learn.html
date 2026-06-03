@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Nasif Lab — Learn · Build · Teach. Courses completed, knowledge shared, and future classes by Shayban Nasif.">
+  <title>Nasif Lab — Learn · Build · Teach</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* ── Hero variant ── */
+    .hero-lab {
+      background: linear-gradient(150deg, #0a1520 0%, #0f2030 45%, #0a1a28 100%);
+      position: relative;
+    }
+    .hero-lab::before {
+      background:
+        radial-gradient(ellipse at 15% 80%, rgba(60,200,100,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 20%, rgba(201,168,76,0.08) 0%, transparent 55%);
+    }
+    /* subtle circuit-board decoration */
+    .hero-lab::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    /* ── Lab brand ── */
+    .lab-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.25);
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 1.25rem;
+    }
+    .lab-brand-icon { font-size: 1.1rem; }
+    .lab-brand-text {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ── Philosophy block ── */
+    .philosophy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    .phil-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--t);
+    }
+    .phil-card:hover { box-shadow: var(--shadow); transform: translateY(-4px); }
+    .phil-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .phil-word {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+    .phil-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Course tabs / filter ── */
+    .course-filter {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .filter-btn {
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 7px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--t);
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--navy);
+      color: var(--white);
+      border-color: var(--navy);
+    }
+
+    /* ── Completed courses ── */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+    .course-card {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--white);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--t);
+    }
+    .course-card:hover {
+      box-shadow: var(--shadow);
+      border-color: rgba(201,168,76,0.3);
+      transform: translateY(-2px);
+    }
+    .course-icon { font-size: 1.75rem; flex-shrink: 0; margin-top: 2px; }
+    .course-info { flex: 1; }
+    .course-name { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.2rem; }
+    .course-provider { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .course-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .badge-done {
+      background: rgba(34,197,94,0.1);
+      color: #16a34a;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .badge-progress {
+      background: rgba(59,130,246,0.1);
+      color: #2563eb;
+      border: 1px solid rgba(59,130,246,0.25);
+    }
+    .badge-planned {
+      background: rgba(201,168,76,0.1);
+      color: #92730a;
+      border: 1px solid rgba(201,168,76,0.25);
+    }
+
+    /*
+    ══════════════════════════════════════════════════
+     HOW TO ADD A COMPLETED COURSE
+     Copy a .course-card block below, paste inside
+     .courses-grid, and fill in your course details.
+     Choose badge class: badge-done / badge-progress / badge-planned
+    ══════════════════════════════════════════════════
+    */
+
+    /* ── Section break with category header ── */
+    .course-category-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+      margin-top: 2rem;
+      grid-column: 1 / -1;
+    }
+
+    /* ── Teach section ── */
+    .teach-intro {
+      max-width: 680px;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.75;
+      margin-bottom: 3rem;
+    }
+
+    .teach-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.75rem;
+    }
+    .teach-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--t);
+      position: relative;
+      overflow: hidden;
+    }
+    .teach-card:hover { box-shadow: var(--shadow); transform: translateY(-4px); }
+    .teach-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+    }
+    .teach-card.level-school::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .teach-card.level-college::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .teach-card.level-uni::before     { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+    .teach-card.level-all::before     { background: linear-gradient(90deg, #10b981, #34d399); }
+
+    .teach-icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
+    .teach-levels {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .level-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 10px;
+    }
+    .pill-school  { background: rgba(245,158,11,0.12); color: #b45309; }
+    .pill-college { background: rgba(59,130,246,0.12); color: #1d4ed8; }
+    .pill-uni     { background: var(--gold-pale); color: #92730a; }
+    .pill-all     { background: rgba(16,185,129,0.12); color: #047857; }
+
+    .teach-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .teach-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+    .teach-status {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .teach-status::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    /* ── CTA section ── */
+    .cta-box {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-radius: var(--radius);
+      padding: 3.5rem;
+      text-align: center;
+      border: 1px solid rgba(201,168,76,0.2);
+    }
+    .cta-box h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+    .cta-box p { font-size: 1rem; color: rgba(255,255,255,0.6); max-width: 500px;
+      margin: 0 auto 2rem; line-height: 1.7; }
+    .cta-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+
+    /* ── Stats bar ── */
+    .lab-stats {
+      display: flex;
+      gap: 3rem;
+      flex-wrap: wrap;
+      padding: 2rem 2.5rem;
+      background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+      border-radius: var(--radius);
+      border: 1px solid rgba(201,168,76,0.18);
+      margin-bottom: 3.5rem;
+    }
+    .lab-stat-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 900;
+      line-height: 1;
+    }
+    .lab-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.5);
+      letter-spacing: 1.5px; text-transform: uppercase; margin-top: 0.25rem; }
+
+    @media (max-width: 768px) {
+      .philosophy-grid { grid-template-columns: 1fr; }
+      .cta-box { padding: 2rem; }
+      .cta-actions { flex-direction: column; align-items: center; }
+    }
+    @media (max-width: 480px) {
+      .lab-stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ NAVIGATION ══════════════════ -->
+<nav class="nav">
+  <a href="index.html" class="nav-logo-text">Shayban <span>Nasif</span></a>
+  <div class="nav-links">
+    <a href="index.html"   class="nav-link">Home</a>
+    <a href="passion.html" class="nav-link">Passion</a>
+    <a href="tourism.html" class="nav-link">🗺 Travels</a>
+    <a href="learn.html"   class="nav-link active">🎓 Nasif Lab</a>
+    <a href="https://www.linkedin.com/in/shayban-nasif-tonmoy/" target="_blank" rel="noopener"
+       class="nav-link ext">LinkedIn</a>
+    <a href="../Resumes/Shayban_Nasif_Resume_2026.html" download class="nav-resume-btn">
+      ↓ Resume
+    </a>
+  </div>
+  <button class="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero hero-lab">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="lab-brand">
+        <span class="lab-brand-icon">⚡</span>
+        <span class="lab-brand-text">Learning · Building · Teaching</span>
+      </div>
+      <h1 class="hero-name">Nasif<br>Lab</h1>
+      <p class="hero-title">Where curiosity becomes curriculum</p>
+      <p class="hero-location"><span>🔬</span> Knowledge in progress</p>
+      <p class="hero-summary">
+        A personal learning hub — documenting the courses I've completed,
+        the skills I'm building, and the knowledge I'm preparing to teach.
+        From online certifications to planned robotics classes, this is where
+        learning and teaching intersect.
+      </p>
+      <div class="hero-actions">
+        <a href="#completed" class="btn-primary">Completed Courses ↓</a>
+        <a href="#teach"     class="btn-secondary">Courses I'll Teach ↓</a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <div class="photo-ring">
+        <div class="photo-inner">
+          <img src="assets/profile.jpg" alt="Shayban Nasif">
+          <div class="photo-initials" style="display:none;align-items:center;justify-content:center;">SN</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ PHILOSOPHY ══════════════════ -->
+<section class="section section-alt" id="philosophy">
+  <div class="section-inner">
+
+    <div class="section-header fade-in">
+      <p class="section-label">The Lab Philosophy</p>
+      <h2 class="section-title">Learn · Build · Teach</h2>
+      <p class="section-subtitle">Three verbs. One direction. A commitment to lifelong growth and shared knowledge.</p>
+    </div>
+
+    <div class="philosophy-grid">
+      <div class="phil-card fade-in">
+        <div class="phil-icon">📖</div>
+        <div class="phil-word">Learn</div>
+        <div class="phil-desc">
+          Never stop being a student. Formal courses, self-study, IEEE papers,
+          on-the-job discoveries — every source counts. Learning is a daily practice, not a phase.
+        </div>
+      </div>
+      <div class="phil-card fade-in fade-in-delay-1">
+        <div class="phil-icon">🔧</div>
+        <div class="phil-word">Build</div>
+        <div class="phil-desc">
+          Theory becomes real when you build something with it. Whether it's a robotics
+          project, a data dashboard, or a business system — building is where understanding deepens.
+        </div>
+      </div>
+      <div class="phil-card fade-in fade-in-delay-2">
+        <div class="phil-icon">🏫</div>
+        <div class="phil-word">Teach</div>
+        <div class="phil-desc">
+          The best way to master something is to teach it. My goal is to bring
+          hands-on robotics and technology education to students at every level —
+          from school to university.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════ COMPLETED COURSES ══════════════════ -->
+<section class="section" id="completed">
+  <div class="section-inner">
+
+    <div class="section-header fade-in">
+      <p class="section-label">What I've Learned</p>
+      <h2 class="section-title">Completed Courses &amp; Certifications</h2>
+      <p class="section-subtitle">A growing record of formal learning — online platforms, professional certifications, and self-directed study.</p>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="lab-stats fade-in">
+      <div>
+        <div class="lab-stat-num" id="done-count">0</div>
+        <div class="lab-stat-label">Courses Completed</div>
+      </div>
+      <div>
+        <div class="lab-stat-num">3+</div>
+        <div class="lab-stat-label">Platforms Used</div>
+      </div>
+      <div>
+        <div class="lab-stat-num">10+</div>
+        <div class="lab-stat-label">Years Learning</div>
+      </div>
+      <div>
+        <div class="lab-stat-num">1</div>
+        <div class="lab-stat-label">IEEE Publication</div>
+      </div>
+    </div>
+
+    <!--
+    ══════════════════════════════════════════════════
+     HOW TO ADD A COMPLETED COURSE
+     Copy a .course-card block and paste inside .courses-grid
+     Badge classes: badge-done | badge-progress | badge-planned
+    ══════════════════════════════════════════════════
+    -->
+
+    <div class="courses-grid">
+
+      <div class="course-category-header">💻 Data Science &amp; AI</div>
+
+      <div class="course-card fade-in">
+        <div class="course-icon">🐍</div>
+        <div class="course-info">
+          <div class="course-name">Python Programming</div>
+          <div class="course-provider">Coursera</div>
+          <span class="course-badge badge-done">✓ Completed</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-1">
+        <div class="course-icon">🤖</div>
+        <div class="course-info">
+          <div class="course-name">Machine Learning with Python</div>
+          <div class="course-provider">Coursera</div>
+          <span class="course-badge badge-done">✓ Completed</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-2">
+        <div class="course-icon">📊</div>
+        <div class="course-info">
+          <div class="course-name">Fundamentals of Visualization with Tableau</div>
+          <div class="course-provider">Coursera</div>
+          <span class="course-badge badge-done">✓ Completed</span>
+        </div>
+      </div>
+
+      <div class="course-category-header">🛠 Business &amp; Productivity</div>
+
+      <div class="course-card fade-in">
+        <div class="course-icon">📈</div>
+        <div class="course-info">
+          <div class="course-name">Advanced Microsoft Excel Certification</div>
+          <div class="course-provider">Microsoft</div>
+          <span class="course-badge badge-done">✓ Completed</span>
+        </div>
+      </div>
+
+      <div class="course-category-header">🌐 Networking &amp; Systems</div>
+
+      <div class="course-card fade-in">
+        <div class="course-icon">🔌</div>
+        <div class="course-info">
+          <div class="course-name">Network Fundamentals (CCNA-level)</div>
+          <div class="course-provider">Cisco-based · Self-directed</div>
+          <span class="course-badge badge-done">✓ Completed</span>
+        </div>
+      </div>
+
+      <div class="course-category-header">🤖 Robotics &amp; Embedded Systems</div>
+
+      <div class="course-card fade-in">
+        <div class="course-icon">⚙️</div>
+        <div class="course-info">
+          <div class="course-name">Microcontroller Programming (AVR / Arduino)</div>
+          <div class="course-provider">Self-directed · R&amp;D at 3Engineers (2014–2019)</div>
+          <span class="course-badge badge-done">✓ Applied in Practice</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-1">
+        <div class="course-icon">🔬</div>
+        <div class="course-info">
+          <div class="course-name">Embedded Systems &amp; Sensor Integration</div>
+          <div class="course-provider">Self-directed · RUET Research &amp; 3Engineers</div>
+          <span class="course-badge badge-done">✓ Applied in Practice</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-2">
+        <div class="course-icon">📡</div>
+        <div class="course-info">
+          <div class="course-name">Advanced Robotics &amp; IoT Design</div>
+          <div class="course-provider">In Progress · Self-directed</div>
+          <span class="course-badge badge-progress">⟳ In Progress</span>
+        </div>
+      </div>
+
+      <!--
+        ── TEMPLATE: copy this block to add a new course ──
+        <div class="course-card">
+          <div class="course-icon">[emoji]</div>
+          <div class="course-info">
+            <div class="course-name">[Course Name]</div>
+            <div class="course-provider">[Platform / Provider] · [Year if known]</div>
+            <span class="course-badge badge-done">✓ Completed</span>
+          </div>
+        </div>
+      -->
+
+    </div><!-- /courses-grid -->
+  </div>
+</section>
+
+
+<!-- ══════════════════ CURRENTLY LEARNING ══════════════════ -->
+<section class="section section-alt" id="learning-now">
+  <div class="section-inner">
+
+    <div class="section-header fade-in">
+      <p class="section-label">Work in Progress</p>
+      <h2 class="section-title">Currently Exploring</h2>
+      <p class="section-subtitle">The learning never stops. These are the topics and skills I'm actively working on right now.</p>
+    </div>
+
+    <div class="courses-grid">
+
+      <div class="course-card fade-in">
+        <div class="course-icon">🤖</div>
+        <div class="course-info">
+          <div class="course-name">Advanced Robotics System Design</div>
+          <div class="course-provider">Self-directed research &amp; study</div>
+          <span class="course-badge badge-progress">⟳ Ongoing</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-1">
+        <div class="course-icon">📡</div>
+        <div class="course-info">
+          <div class="course-name">IoT Architecture &amp; Edge Computing</div>
+          <div class="course-provider">Self-directed</div>
+          <span class="course-badge badge-progress">⟳ Ongoing</span>
+        </div>
+      </div>
+
+      <div class="course-card fade-in fade-in-delay-2">
+        <div class="course-icon">🎓</div>
+        <div class="course-info">
+          <div class="course-name">Curriculum Design for Technical Education</div>
+          <div class="course-provider">Planning · Future academic work</div>
+          <span class="course-badge badge-planned">◈ Planned</span>
+        </div>
+      </div>
+
+      <!--
+        ── Add more "currently learning" courses here using the same template ──
+      -->
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ COURSES TO TEACH ══════════════════ -->
+<section class="section" id="teach">
+  <div class="section-inner">
+
+    <div class="section-header fade-in">
+      <p class="section-label">Knowledge to Share</p>
+      <h2 class="section-title">Courses I Plan to Teach</h2>
+    </div>
+
+    <p class="teach-intro fade-in">
+      My goal is to bring <strong>hands-on robotics and embedded systems education</strong> to
+      students at every level — from curious school children discovering electronics for the
+      first time, to university engineers pushing the boundaries of what machines can do.
+      These are the courses I'm developing and preparing to offer.
+    </p>
+
+    <!--
+    ══════════════════════════════════════════════════
+     HOW TO ADD A COURSE TO TEACH
+     Copy a .teach-card block below.
+     Level classes: level-school | level-college | level-uni | level-all
+     Pill classes:  pill-school | pill-college | pill-uni | pill-all
+    ══════════════════════════════════════════════════
+    -->
+
+    <div class="teach-grid">
+
+      <div class="teach-card level-school fade-in">
+        <div class="teach-icon">🤖</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-school">School</span>
+          <span class="level-pill pill-college">College</span>
+        </div>
+        <div class="teach-name">Robotics Fundamentals</div>
+        <div class="teach-desc">
+          An introductory, hands-on course in robotics for young learners.
+          Build simple robots, understand sensors and motors, and learn how
+          machines are programmed to make decisions. No prior experience needed.
+        </div>
+        <div class="teach-status">Coming Soon</div>
+      </div>
+
+      <div class="teach-card level-college fade-in fade-in-delay-1">
+        <div class="teach-icon">⚙️</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-college">College</span>
+          <span class="level-pill pill-uni">University</span>
+        </div>
+        <div class="teach-name">Embedded Systems with Arduino &amp; AVR</div>
+        <div class="teach-desc">
+          Practical embedded systems design using Arduino and AVR microcontrollers.
+          Students will build real projects: sensor interfaces, actuator control,
+          serial communication, and IoT-ready circuits.
+        </div>
+        <div class="teach-status">In Development</div>
+      </div>
+
+      <div class="teach-card level-all fade-in fade-in-delay-2">
+        <div class="teach-icon">💡</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-all">All Levels</span>
+        </div>
+        <div class="teach-name">Electronics for Beginners</div>
+        <div class="teach-desc">
+          A foundation course in electronics — from voltage and current to
+          building your first circuit on a breadboard. Designed to be approachable
+          for absolute beginners regardless of age or background.
+        </div>
+        <div class="teach-status">Coming Soon</div>
+      </div>
+
+      <div class="teach-card level-college fade-in">
+        <div class="teach-icon">📡</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-college">College</span>
+          <span class="level-pill pill-uni">University</span>
+        </div>
+        <div class="teach-name">Introduction to IoT Systems</div>
+        <div class="teach-desc">
+          Understand the Internet of Things from the ground up: sensor networks,
+          microcontrollers, cloud connectivity, and building connected devices.
+          Covers both hardware and software aspects with real project work.
+        </div>
+        <div class="teach-status">Coming Soon</div>
+      </div>
+
+      <div class="teach-card level-uni fade-in fade-in-delay-1">
+        <div class="teach-icon">🐍</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-college">College</span>
+          <span class="level-pill pill-uni">University</span>
+        </div>
+        <div class="teach-name">Programming for Engineers (Python &amp; C)</div>
+        <div class="teach-desc">
+          A practical programming course tailored for engineering students.
+          Learn Python for data analysis and automation, and C/Embedded C
+          for hardware-level programming. Theory plus application.
+        </div>
+        <div class="teach-status">Planned</div>
+      </div>
+
+      <div class="teach-card level-school fade-in fade-in-delay-2">
+        <div class="teach-icon">🏆</div>
+        <div class="teach-levels">
+          <span class="level-pill pill-school">School</span>
+          <span class="level-pill pill-college">College</span>
+          <span class="level-pill pill-uni">University</span>
+        </div>
+        <div class="teach-name">Robotics Workshop &amp; Competitions</div>
+        <div class="teach-desc">
+          Intensive short-form workshops designed to spark creativity and
+          competition. Students design, build, and compete with robots in
+          structured challenges — just like real robotics competitions.
+        </div>
+        <div class="teach-status">Planned</div>
+      </div>
+
+    </div><!-- /teach-grid -->
+  </div>
+</section>
+
+
+<!-- ══════════════════ CTA ══════════════════ -->
+<section class="section section-alt" id="connect">
+  <div class="section-inner">
+    <div class="cta-box fade-in">
+      <h2>Interested in Learning Together?</h2>
+      <p>
+        Whether you're a student curious about robotics, a school or college looking to
+        set up a tech program, or just someone who wants to connect — I'd love to hear
+        from you. Let's build something meaningful.
+      </p>
+      <div class="cta-actions">
+        <a href="mailto:iam.snasif@gmail.com?subject=Nasif Lab - Learning Inquiry"
+           class="btn-primary">
+          ✉ Get in Touch
+        </a>
+        <a href="https://www.linkedin.com/in/shayban-nasif-tonmoy/" target="_blank"
+           rel="noopener" class="btn-secondary">
+          Connect on LinkedIn ↗
+        </a>
+        <a href="index.html" class="btn-secondary">
+          ← Professional Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-name">Nasif Lab</div>
+      <div class="footer-tagline">Learn · Build · Teach — by Shayban Nasif</div>
+    </div>
+    <div class="footer-links">
+      <a href="index.html"   class="footer-link">Professional Profile</a>
+      <a href="passion.html" class="footer-link">Passion &amp; Works</a>
+      <a href="tourism.html" class="footer-link">Travels</a>
+      <a href="https://risingsunservices.jp/" target="_blank" rel="noopener"
+         class="footer-link">Rising Sun Services</a>
+      <a href="mailto:iam.snasif@gmail.com" class="footer-link">Contact</a>
+    </div>
+    <div class="footer-copy">
+      © 2026 Shayban Nasif · Tokyo, Japan · iam.snasif@gmail.com
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script>
+  /* Auto-count completed courses (badge-done only) */
+  const doneBadges = document.querySelectorAll('.badge-done').length;
+  document.getElementById('done-count').textContent = doneBadges;
+</script>
+</body>
+</html>

@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shayban Nasif — Travel Journal & Tourism. Exploring the world from Tokyo.">
+  <title>Shayban Nasif — Travels &amp; Tourism</title>
+
+  <!-- Leaflet map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    /* ── Hero variant ── */
+    .hero-travel {
+      background: linear-gradient(150deg, #091520 0%, #0d2235 50%, #091a2b 100%);
+    }
+
+    .hero-travel::before {
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(30, 100, 180, 0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 30%, rgba(201, 168, 76, 0.07) 0%, transparent 55%);
+    }
+
+    /* ── World map ── */
+    .map-wrapper {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      box-shadow: var(--shadow-lg);
+    }
+
+    #world-map {
+      height: 460px;
+      background: #0a1a2e;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: #0d1b2a !important;
+      color: #fff !important;
+      border: 1px solid rgba(201, 168, 76, 0.35) !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .leaflet-popup-content {
+      margin: 10px 14px !important;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .leaflet-popup-tip {
+      background: #0d1b2a !important;
+    }
+
+    .leaflet-popup-close-button {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* custom gold pulsing map pin */
+    .map-pin {
+      width: 16px;
+      height: 16px;
+      background: var(--gold);
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.6);
+      animation: pulse-pin 2.5s infinite;
+    }
+
+    @keyframes pulse-pin {
+      0% {
+        box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.6);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(201, 168, 76, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(201, 168, 76, 0);
+      }
+    }
+
+    /* ── Country cards ── */
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .country-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--gold);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--t);
+    }
+
+    .country-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+    }
+
+    .country-flag {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .country-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 0.25rem;
+    }
+
+    .country-role {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+
+    .country-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* ── Japan section ── */
+    .japan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .pref-progress {
+      text-align: right;
+    }
+
+    .pref-progress-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .pref-bar {
+      width: 200px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .pref-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      border-radius: 3px;
+      transition: width 1.2s ease;
+    }
+
+    .pref-count-display {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+      margin-top: 0.3rem;
+    }
+
+    .region-block {
+      margin-bottom: 2rem;
+    }
+
+    .region-name {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pref-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /*
+    ══════════════════════════════════════════
+     HOW TO MARK A PREFECTURE AS VISITED
+     Add class="pref-chip visited" to mark it gold.
+     Leave as class="pref-chip" for unvisited (gray).
+    ══════════════════════════════════════════
+    */
+    .pref-chip {
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--light-gray);
+      color: var(--text-muted);
+      opacity: 0.65;
+      cursor: default;
+      transition: all var(--t);
+    }
+
+    .pref-chip.visited {
+      background: var(--gold-pale);
+      border-color: rgba(201, 168, 76, 0.5);
+      color: var(--navy);
+      opacity: 1;
+      font-weight: 700;
+    }
+
+    /* ── Travel Journal ── */
+    .journal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.75rem;
+    }
+
+    /*
+    ══════════════════════════════════════════════════════════
+     HOW TO ADD A NEW TRAVEL ENTRY
+     1. Copy the block below (from <!-- ENTRY START --> to
+        <!-- ENTRY END -->) and paste inside .journal-grid
+     2. Replace placeholders in [brackets]
+     3. Put your photo in assets/travel/ folder
+     4. Done — the trip counter updates automatically!
+    ══════════════════════════════════════════════════════════
+    */
+    .journal-entry {
+      background: var(--white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--t);
+    }
+
+    .journal-entry:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+    }
+
+    .entry-photo {
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      background: linear-gradient(145deg, var(--navy-mid), var(--navy-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+    }
+
+    .entry-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .journal-entry:hover .entry-photo img {
+      transform: scale(1.05);
+    }
+
+    .entry-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .entry-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .entry-date {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .entry-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+
+    .entry-location {
+      font-size: 0.77rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .entry-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .entry-note {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Rising Sun Tours ── */
+    .rts-card {
+      background: linear-gradient(145deg, var(--navy), var(--navy-mid));
+      border-radius: var(--radius);
+      padding: 3rem;
+      border: 1px solid rgba(201, 168, 76, 0.22);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2.5rem;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    .rts-icon {
+      font-size: 5rem;
+    }
+
+    .rts-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .rts-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+
+    .rts-desc {
+      font-size: 0.97rem;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+      max-width: 560px;
+    }
+
+    .btn-rts {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 12px 24px;
+      border-radius: 8px;
+      transition: all var(--t);
+    }
+
+    .btn-rts:hover {
+      background: var(--gold-light);
+      transform: translateY(-2px);
+    }
+
+    /* ── Stats bar ── */
+    .travel-stats {
+      display: flex;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      padding: 1.75rem 2.5rem;
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 2.5rem;
+    }
+
+    .t-stat {}
+
+    .t-stat-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .t-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 0.2rem;
+    }
+
+    @media (max-width: 768px) {
+      .rts-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1.5rem;
+      }
+
+      #world-map {
+        height: 320px;
+      }
+
+      .pref-bar {
+        width: 150px;
+      }
+
+      .japan-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .pref-progress {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════ NAVIGATION ══════════════════ -->
+  <nav class="nav">
+    <a href="index.html" class="nav-logo-text">Shayban <span>Nasif</span></a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="passion.html" class="nav-link">Passion</a>
+      <a href="tourism.html" class="nav-link active">🗺 Travels</a>
+      <a href="learn.html" class="nav-link">🎓 Nasif Lab</a>
+      <a href="https://www.linkedin.com/in/shayban-nasif-tonmoy/" target="_blank" rel="noopener"
+        class="nav-link ext">LinkedIn</a>
+      <a href="../Resumes/Shayban_Nasif_Resume_2026.html" download class="nav-resume-btn">
+        ↓ Resume
+      </a>
+    </div>
+    <button class="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+
+  <!-- ══════════════════ HERO ══════════════════ -->
+  <section class="hero hero-travel">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Adventures &amp; Exploration</p>
+        <h1 class="hero-name">Travels<br>&amp; Tourism</h1>
+        <p class="hero-title">Exploring Japan · Connecting the World</p>
+        <p class="hero-location"><span>✈️</span> Based in Tokyo, Japan</p>
+        <p class="hero-summary">
+          Travel has always been a way for me to understand people, cultures, and possibilities.
+          From my roots in Bangladesh to a new life in Japan — every journey adds a new
+          dimension to how I see the world and the work I do.
+        </p>
+        <div class="hero-actions">
+          <a href="#journal" class="btn-primary">Travel Journal ↓</a>
+          <a href="https://www.facebook.com/rs.tours.japan" target="_blank" rel="noopener" class="btn-secondary">Rising
+            Sun Tours ↗</a>
+        </div>
+      </div>
+      <div class="hero-photo">
+        <div class="photo-ring">
+          <div class="photo-inner">
+            <img src="assets/profile.jpg" alt="Shayban Nasif">
+            <div class="photo-initials" style="display:none;align-items:center;justify-content:center;">SN</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ WORLD MAP ══════════════════ -->
+  <section class="section section-alt" id="world">
+    <div class="section-inner">
+
+      <div class="section-header fade-in">
+        <p class="section-label">World Map</p>
+        <h2 class="section-title">Countries Visited</h2>
+        <p class="section-subtitle">A living map of places explored — with more destinations on the horizon.</p>
+      </div>
+
+      <!-- Travel quick stats -->
+      <div class="travel-stats fade-in">
+        <div class="t-stat">
+          <div class="t-stat-num" id="country-count">3</div>
+          <div class="t-stat-label">Countries</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-num" id="trip-count">0</div>
+          <div class="t-stat-label">Journal Entries</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-num" id="pref-count-stat">0</div>
+          <div class="t-stat-label">Japan Prefectures</div>
+        </div>
+        <div class="t-stat">
+          <div class="t-stat-num">6+</div>
+          <div class="t-stat-label">Years in Japan</div>
+        </div>
+      </div>
+
+      <div class="map-wrapper">
+        <div id="world-map"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ COUNTRIES ══════════════════ -->
+  <section class="section" id="countries">
+    <div class="section-inner">
+
+      <div class="section-header fade-in">
+        <p class="section-label">Places</p>
+        <h2 class="section-title">Destinations</h2>
+      </div>
+
+      <div class="country-grid">
+
+        <div class="country-card fade-in">
+          <div class="country-flag">🇧🇩</div>
+          <div class="country-name">Bangladesh</div>
+          <div class="country-role">Home Country</div>
+          <div class="country-desc">
+            Rajshahi and Dhaka form the core of my roots. Varendra University, RUET,
+            and years of building professional networks in the country that shaped me.
+            Bangladesh is always home, no matter where life takes me.
+          </div>
+        </div>
+
+        <div class="country-card fade-in fade-in-delay-1">
+          <div class="country-flag">🇵🇰</div>
+          <div class="country-name">Pakistan</div>
+          <div class="country-role">Visited</div>
+          <div class="country-desc">
+            A neighboring South Asian nation with rich culture, warm hospitality, and
+            incredible landscapes. A journey that broadened my perspective on the
+            region and its people.
+          </div>
+        </div>
+
+        <div class="country-card fade-in fade-in-delay-2">
+          <div class="country-flag">🇯🇵</div>
+          <div class="country-name">Japan</div>
+          <div class="country-role">Current Home · Tourism Focus</div>
+          <div class="country-desc">
+            Since 2019, Tokyo has been my base. Japan's unique blend of tradition
+            and technology, discipline and creativity, continues to inspire everything
+            I do — professionally and personally. Rising Sun Tours is my way of
+            sharing this beautiful country with others.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ JAPAN EXPLORER ══════════════════ -->
+  <section class="section section-alt" id="japan">
+    <div class="section-inner">
+
+      <div class="japan-header fade-in">
+        <div>
+          <p class="section-label">Japan Explorer</p>
+          <h2 class="section-title">Prefectures Covered</h2>
+          <p class="section-subtitle">Exploring all 47 prefectures — one adventure at a time.</p>
+        </div>
+        <div class="pref-progress">
+          <div class="pref-progress-label">Progress</div>
+          <div class="pref-bar">
+            <div class="pref-bar-fill" id="pref-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="pref-count-display">
+            <span id="pref-count">0</span> of 47 prefectures
+          </div>
+        </div>
+      </div>
+
+      <!-- Japan interactive map -->
+      <div class="map-wrapper" style="margin-bottom:1.25rem;">
+        <div id="japan-map" style="height:420px;background:#0a1a2e;"></div>
+      </div>
+      <div
+        style="display:flex;gap:1.5rem;margin-bottom:2rem;font-size:0.82rem;color:var(--text-muted);align-items:center;">
+        <span style="display:flex;align-items:center;gap:6px;">
+          <span
+            style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#c9a84c;border:2px solid #e8c96a;"></span>
+          Visited
+        </span>
+        <span style="display:flex;align-items:center;gap:6px;">
+          <span
+            style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#4a6080;border:2px solid #2a3f5a;opacity:0.6;"></span>
+          Not yet visited
+        </span>
+        <span style="color:var(--gold);font-size:0.76rem;">Click any dot for details</span>
+      </div>
+
+      <!--
+    ══════════════════════════════════════════════════
+     HOW TO MARK A PREFECTURE AS VISITED
+     Change:  class="pref-chip"
+     To:      class="pref-chip visited"
+     Both the map markers and the progress bar update automatically.
+    ══════════════════════════════════════════════════
+    -->
+
+      <div class="region-block fade-in">
+        <div class="region-name">🏔 Hokkaido</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Hokkaido</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🌾 Tohoku</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Aomori</span>
+          <span class="pref-chip">Iwate</span>
+          <span class="pref-chip">Miyagi</span>
+          <span class="pref-chip">Akita</span>
+          <span class="pref-chip visited">Yamagata</span>
+          <span class="pref-chip">Fukushima</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🗼 Kanto</div>
+        <div class="pref-chips">
+          <span class="pref-chip visited">Ibaraki</span>
+          <span class="pref-chip visited">Tochigi</span>
+          <span class="pref-chip visited">Gunma</span>
+          <span class="pref-chip visited">Saitama</span>
+          <span class="pref-chip visited">Chiba</span>
+          <span class="pref-chip visited">Tokyo</span>
+          <span class="pref-chip visited">Kanagawa</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🗻 Chubu</div>
+        <div class="pref-chips">
+          <span class="pref-chip visited">Niigata</span>
+          <span class="pref-chip">Toyama</span>
+          <span class="pref-chip">Ishikawa</span>
+          <span class="pref-chip">Fukui</span>
+          <span class="pref-chip visited">Yamanashi</span>
+          <span class="pref-chip">Nagano</span>
+          <span class="pref-chip visited">Shizuoka</span>
+          <span class="pref-chip">Aichi</span>
+          <span class="pref-chip">Gifu</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">⛩ Kansai</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Mie</span>
+          <span class="pref-chip">Shiga</span>
+          <span class="pref-chip visited">Kyoto</span>
+          <span class="pref-chip visited">Osaka</span>
+          <span class="pref-chip">Hyogo</span>
+          <span class="pref-chip">Nara</span>
+          <span class="pref-chip">Wakayama</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🌊 Chugoku</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Tottori</span>
+          <span class="pref-chip">Shimane</span>
+          <span class="pref-chip">Okayama</span>
+          <span class="pref-chip">Hiroshima</span>
+          <span class="pref-chip">Yamaguchi</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🍊 Shikoku</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Tokushima</span>
+          <span class="pref-chip">Kagawa</span>
+          <span class="pref-chip">Ehime</span>
+          <span class="pref-chip">Kochi</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🌋 Kyushu</div>
+        <div class="pref-chips">
+          <span class="pref-chip">Fukuoka</span>
+          <span class="pref-chip">Saga</span>
+          <span class="pref-chip">Nagasaki</span>
+          <span class="pref-chip">Kumamoto</span>
+          <span class="pref-chip">Oita</span>
+          <span class="pref-chip">Miyazaki</span>
+          <span class="pref-chip">Kagoshima</span>
+        </div>
+      </div>
+
+      <div class="region-block fade-in">
+        <div class="region-name">🌺 Okinawa</div>
+        <div class="pref-chips">
+          <span class="pref-chip visited">Okinawa</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ TRAVEL JOURNAL ══════════════════ -->
+  <section class="section" id="journal">
+    <div class="section-inner">
+
+      <div class="section-header fade-in">
+        <p class="section-label">Travel Journal</p>
+        <h2 class="section-title">Trip Stories</h2>
+        <p class="section-subtitle">
+          Snapshots from the road — places, moments, and memories.
+          Updated whenever a new adventure unfolds.
+        </p>
+      </div>
+
+      <!--
+    ══════════════════════════════════════════════════════════════
+     HOW TO ADD A NEW TRAVEL ENTRY
+     ──────────────────────────────────────────────────────────
+     1. Copy ONE <div class="journal-entry">...</div> block below
+     2. Paste it at the TOP of the .journal-grid (newest first)
+     3. Fill in:
+        - entry-date:     "March 2025"
+        - entry-location: "OSAKA, JAPAN"
+        - entry-title:    "Your trip title"
+        - entry-note:     Your travel story (2-4 sentences)
+        - entry-photo img src: "assets/travel/your-photo.jpg"
+          (if no photo, remove the <img> tag — emoji shows instead)
+     4. Save the file. The trip counter auto-updates.
+    ══════════════════════════════════════════════════════════════
+    -->
+
+      <div class="journal-grid">
+
+        <!-- ENTRY START ─ TEMPLATE: copy this entire block for each new trip -->
+        <div class="journal-entry fade-in">
+          <div class="entry-photo">
+            <!-- Replace with: <img src="assets/travel/your-photo.jpg" alt="Trip photo"> -->
+            🇯🇵
+          </div>
+          <div class="entry-body">
+            <div class="entry-meta">
+              <span class="entry-date">2019 – Present</span>
+              <span class="entry-dot"></span>
+              <span class="entry-location">TOKYO, JAPAN</span>
+            </div>
+            <div class="entry-title">A New Chapter in the Land of the Rising Sun</div>
+            <div class="entry-note">
+              Tokyo became home in 2019 — and it has been a remarkable journey ever since.
+              The city's energy, precision, and warmth have shaped both my professional path
+              and my perspective on the world. Every walk, every commute, every season
+              teaches something new.
+            </div>
+          </div>
+        </div>
+        <!-- ENTRY END -->
+
+        <!-- ENTRY START -->
+        <div class="journal-entry fade-in fade-in-delay-1">
+          <div class="entry-photo">
+            🇧🇩
+          </div>
+          <div class="entry-body">
+            <div class="entry-meta">
+              <span class="entry-date">Rajshahi · Dhaka</span>
+              <span class="entry-dot"></span>
+              <span class="entry-location">BANGLADESH</span>
+            </div>
+            <div class="entry-title">Roots &amp; Return</div>
+            <div class="entry-note">
+              Bangladesh is where everything began — university, early career, family,
+              and the first sparks of curiosity in robotics and technology. Every visit
+              back is a reminder of how far the journey has come and where the heart
+              always stays.
+            </div>
+          </div>
+        </div>
+        <!-- ENTRY END -->
+
+        <!-- ENTRY START -->
+        <div class="journal-entry fade-in fade-in-delay-2">
+          <div class="entry-photo">
+            🇵🇰
+          </div>
+          <div class="entry-body">
+            <div class="entry-meta">
+              <span class="entry-date">[Add your visit date]</span>
+              <span class="entry-dot"></span>
+              <span class="entry-location">PAKISTAN</span>
+            </div>
+            <div class="entry-title">South Asia Explored</div>
+            <div class="entry-note">
+              [Add your Pakistan travel story here — what you saw, who you met,
+              what surprised you. Replace this placeholder with your own memories.]
+            </div>
+          </div>
+        </div>
+        <!-- ENTRY END -->
+
+      </div><!-- /journal-grid -->
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ RISING SUN TOURS ══════════════════ -->
+  <section class="section section-alt" id="rising-sun-tours">
+    <div class="section-inner">
+
+      <div class="section-header fade-in">
+        <p class="section-label">The Initiative</p>
+        <h2 class="section-title">Rising Sun Tours</h2>
+      </div>
+
+      <div class="rts-card fade-in">
+        <div class="rts-icon">🌅</div>
+        <div>
+          <div class="rts-label">Tourism · Japan</div>
+          <div class="rts-title">Rising Sun Tours Japan</div>
+          <div class="rts-desc">
+            Rising Sun Tours is my passion project in tourism — currently focused on Japan,
+            with global ambitions for the future. The goal is to help travelers discover Japan's
+            beauty authentically: its hidden gems, cultural depth, seasonal wonders, and the
+            warmth of its people that you can't find in a guidebook.
+            <br><br>
+            From planning itineraries for first-time visitors to sharing travel insights
+            for Japan enthusiasts — this is where my love for travel meets my drive to
+            help others experience it too.
+          </div>
+          <a href="https://www.facebook.com/rs.tours.japan" target="_blank" rel="noopener" class="btn-rts">
+            Follow on Facebook ↗
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ══════════════════ FOOTER ══════════════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-name">Shayban Nasif</div>
+        <div class="footer-tagline">Business Development · IT · Education · Robotics · Travel</div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html" class="footer-link">Home</a>
+        <a href="passion.html" class="footer-link">Passion</a>
+        <a href="learn.html" class="footer-link">Nasif Lab</a>
+        <a href="https://www.facebook.com/rs.tours.japan" target="_blank" rel="noopener" class="footer-link">Rising Sun
+          Tours</a>
+        <a href="https://risingsunservices.jp/" target="_blank" rel="noopener" class="footer-link">Rising Sun
+          Services</a>
+        <a href="mailto:iam.snasif@gmail.com" class="footer-link">Contact</a>
+      </div>
+      <div class="footer-copy">
+        © 2026 Shayban Nasif · Tokyo, Japan · iam.snasif@gmail.com
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    const DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const TILE_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright" style="color:#c9a84c">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" style="color:#c9a84c">CARTO</a>';
+
+    /* ─── World Map ─── */
+    const map = L.map('world-map', {
+      center: [28, 95], zoom: 3,
+      scrollWheelZoom: false, zoomControl: true, attributionControl: true
+    });
+    L.tileLayer(DARK_TILES, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18 }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 400);
+
+    function addPin(lat, lng, flag, country, detail) {
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="map-pin"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8], popupAnchor: [0, -12]
+      });
+      L.marker([lat, lng], { icon }).addTo(map).bindPopup(
+        `<div style="font-family:'Inter',sans-serif;">
+        <div style="font-size:1.4rem;margin-bottom:4px;">${flag}</div>
+        <strong style="font-size:1rem;color:#fff;">${country}</strong>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-top:2px;">${detail}</div>
+      </div>`
+      );
+    }
+    addPin(23.8103, 90.4125, '🇧🇩', 'Bangladesh', 'Home country · Rajshahi & Dhaka');
+    addPin(30.3753, 69.3451, '🇵🇰', 'Pakistan', 'Visited');
+    addPin(35.6762, 139.650, '🇯🇵', 'Japan', 'Current home · Tokyo · Since 2019');
+
+    /* ─── Prefecture counter ─── */
+    const visitedChips = document.querySelectorAll('.pref-chip.visited').length;
+    const totalChips = document.querySelectorAll('.pref-chip').length;
+    document.getElementById('pref-count').textContent = visitedChips;
+    document.getElementById('pref-count-stat').textContent = visitedChips;
+    document.getElementById('pref-bar-fill').style.width = Math.round((visitedChips / totalChips) * 100) + '%';
+
+    /* ─── Journal entry counter ─── */
+    document.getElementById('trip-count').textContent = document.querySelectorAll('.journal-entry').length;
+
+    /* ─── Japan Prefecture Map ─── */
+    const japanMap = L.map('japan-map', {
+      center: [36.5, 136], zoom: 5,
+      scrollWheelZoom: false, zoomControl: true, attributionControl: true
+    });
+    L.tileLayer(DARK_TILES, { attribution: TILE_ATTR, subdomains: 'abcd', maxZoom: 18 }).addTo(japanMap);
+    setTimeout(() => japanMap.invalidateSize(), 400);
+
+    const visitedNames = new Set(
+      [...document.querySelectorAll('.pref-chip.visited')].map(el => el.textContent.trim())
+    );
+
+    const prefectures = [
+      { name: 'Hokkaido', lat: 43.0621, lng: 141.3544 },
+      { name: 'Aomori', lat: 40.8246, lng: 140.7400 },
+      { name: 'Iwate', lat: 39.7036, lng: 141.1527 },
+      { name: 'Miyagi', lat: 38.2682, lng: 140.8694 },
+      { name: 'Akita', lat: 39.7200, lng: 140.1023 },
+      { name: 'Yamagata', lat: 38.2404, lng: 140.3633 },
+      { name: 'Fukushima', lat: 37.7608, lng: 140.4748 },
+      { name: 'Ibaraki', lat: 36.3418, lng: 140.4468 },
+      { name: 'Tochigi', lat: 36.5551, lng: 139.8827 },
+      { name: 'Gunma', lat: 36.3895, lng: 139.0631 },
+      { name: 'Saitama', lat: 35.8617, lng: 139.6455 },
+      { name: 'Chiba', lat: 35.6073, lng: 140.1063 },
+      { name: 'Tokyo', lat: 35.6762, lng: 139.6503 },
+      { name: 'Kanagawa', lat: 35.4437, lng: 139.6380 },
+      { name: 'Niigata', lat: 37.9161, lng: 139.0364 },
+      { name: 'Toyama', lat: 36.6953, lng: 137.2137 },
+      { name: 'Ishikawa', lat: 36.5613, lng: 136.6562 },
+      { name: 'Fukui', lat: 36.0652, lng: 136.2218 },
+      { name: 'Yamanashi', lat: 35.6635, lng: 138.5684 },
+      { name: 'Nagano', lat: 36.6513, lng: 138.1810 },
+      { name: 'Shizuoka', lat: 34.9769, lng: 138.3831 },
+      { name: 'Aichi', lat: 35.1815, lng: 136.9066 },
+      { name: 'Gifu', lat: 35.4232, lng: 136.7608 },
+      { name: 'Mie', lat: 34.7303, lng: 136.5086 },
+      { name: 'Shiga', lat: 35.0045, lng: 135.8686 },
+      { name: 'Kyoto', lat: 35.0116, lng: 135.7681 },
+      { name: 'Osaka', lat: 34.6937, lng: 135.5023 },
+      { name: 'Hyogo', lat: 34.6913, lng: 135.1831 },
+      { name: 'Nara', lat: 34.6851, lng: 135.8049 },
+      { name: 'Wakayama', lat: 34.2260, lng: 135.1675 },
+      { name: 'Tottori', lat: 35.5011, lng: 134.2352 },
+      { name: 'Shimane', lat: 35.4723, lng: 133.0505 },
+      { name: 'Okayama', lat: 34.6553, lng: 133.9195 },
+      { name: 'Hiroshima', lat: 34.3853, lng: 132.4553 },
+      { name: 'Yamaguchi', lat: 34.1859, lng: 131.4706 },
+      { name: 'Tokushima', lat: 34.0657, lng: 134.5593 },
+      { name: 'Kagawa', lat: 34.3401, lng: 134.0434 },
+      { name: 'Ehime', lat: 33.8395, lng: 132.7657 },
+      { name: 'Kochi', lat: 33.5597, lng: 133.5311 },
+      { name: 'Fukuoka', lat: 33.5904, lng: 130.4017 },
+      { name: 'Saga', lat: 33.2494, lng: 130.2990 },
+      { name: 'Nagasaki', lat: 32.7503, lng: 129.8779 },
+      { name: 'Kumamoto', lat: 32.8031, lng: 130.7079 },
+      { name: 'Oita', lat: 33.2382, lng: 131.6126 },
+      { name: 'Miyazaki', lat: 31.9111, lng: 131.4239 },
+      { name: 'Kagoshima', lat: 31.5602, lng: 130.5581 },
+      { name: 'Okinawa', lat: 26.2124, lng: 127.6809 }
+    ];
+
+    prefectures.forEach(({ name, lat, lng }) => {
+      const visited = visitedNames.has(name);
+      L.circleMarker([lat, lng], {
+        radius: visited ? 11 : 7,
+        fillColor: visited ? '#c9a84c' : '#4a6080',
+        color: visited ? '#e8c96a' : '#2a3f5a',
+        weight: 2,
+        opacity: 1,
+        fillOpacity: visited ? 0.92 : 0.45
+      }).addTo(japanMap).bindPopup(
+        `<div style="font-family:'Inter',sans-serif;">
+        <strong style="font-size:1rem;color:#fff;">${name}</strong>
+        ${visited
+          ? '<div style="font-size:0.82rem;color:#c9a84c;margin-top:3px;">✓ Visited</div>'
+          : '<div style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-top:3px;">Not yet visited</div>'}
+      </div>`
+      );
+    });
+  </script>
+</body>
+
+</html>
